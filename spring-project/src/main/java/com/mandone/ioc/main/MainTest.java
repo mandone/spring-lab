@@ -10,6 +10,8 @@ public class MainTest {
 				new AnnotationConfigApplicationContext(IocConfiguration.class);
 
 		IndexService indexService = (IndexService)applicationContext.getBean("indexService");
+
+		//
 		indexService.function();
 	}
 }

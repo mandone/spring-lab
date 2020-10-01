@@ -497,8 +497,11 @@ public class DispatcherServlet extends FrameworkServlet {
 	protected void initStrategies(ApplicationContext context) {
 		initMultipartResolver(context);
 		initLocaleResolver(context);
+		//主题
 		initThemeResolver(context);
+		//映射处理器
 		initHandlerMappings(context);
+		//适配处理器
 		initHandlerAdapters(context);
 		initHandlerExceptionResolvers(context);
 		initRequestToViewNameTranslator(context);

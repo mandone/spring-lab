@@ -157,6 +157,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		Assert.notNull(singletonFactory, "Singleton factory must not be null");
 		synchronized (this.singletonObjects) {
 			if (!this.singletonObjects.containsKey(beanName)) {
+				//beanName和SingletonFactory映射，从beanName找到SingletonFactory，调用getObject方法
 				this.singletonFactories.put(beanName, singletonFactory);
 				this.earlySingletonObjects.remove(beanName);
 				this.registeredSingletons.add(beanName);
@@ -183,11 +184,15 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		Object singletonObject = this.singletonObjects.get(beanName);
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
 			synchronized (this.singletonObjects) {
+				//二级缓存
 				singletonObject = this.earlySingletonObjects.get(beanName);
 				if (singletonObject == null && allowEarlyReference) {
 					ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
 					if (singletonFactory != null) {
+						//这里要对应一个回调方法getEarlyBeanReference(beanName, mbd, bean)
 						singletonObject = singletonFactory.getObject();
+						//从存储ObjectFactory变成存储Object，放到2级缓存中，并且从3级缓存中移除
+						//earlySingletonObjects  singletonFactories  singletonObjects
 						this.earlySingletonObjects.put(beanName, singletonObject);
 						this.singletonFactories.remove(beanName);
 					}
@@ -225,6 +230,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					this.suppressedExceptions = new LinkedHashSet<>();
 				}
 				try {
+					//这里singletonFactory传入的是AbstractBeanFactory,
+					//执行ObjectFactory的回调到getSingleton里面ObjectFactory的getObject方法，去执行createBean最终返回
 					singletonObject = singletonFactory.getObject();
 					newSingleton = true;
 				}

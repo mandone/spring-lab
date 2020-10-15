@@ -494,17 +494,24 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * Initialize the strategy objects that this servlet uses.
 	 * <p>May be overridden in subclasses in order to initialize further strategy objects.
 	 */
-	protected void initStrategies(ApplicationContext context) {
+	//完成9大组件的初始化
+	protected void initStrategies(ApplicationContext context)
+	{
+		//多文件上传组件
 		initMultipartResolver(context);
+		//初始化本地语言环境
 		initLocaleResolver(context);
-		//主题
+		//初始化模板处理器
 		initThemeResolver(context);
-		//映射处理器
+		//初始化映射处理器，从带有注解Controller获取将其反射，将信息封装到HandlerMapping中存到List中
 		initHandlerMappings(context);
 		//适配处理器
 		initHandlerAdapters(context);
+		//初始化异常处理器
 		initHandlerExceptionResolvers(context);
+		//初始化视图转换器
 		initRequestToViewNameTranslator(context);
+		//初始化视图处理器
 		initViewResolvers(context);
 		initFlashMapManager(context);
 	}

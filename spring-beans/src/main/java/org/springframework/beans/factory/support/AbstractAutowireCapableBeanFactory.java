@@ -542,9 +542,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
 		}
 		if (instanceWrapper == null) {
+			//bean封装为 instanceWrapper
 			instanceWrapper = createBeanInstance(beanName, mbd, args);
 		}
-		final Object bean = instanceWrapper.getWrappedInstance();
+			final Object bean = instanceWrapper.getWrappedInstance();
 		Class<?> beanType = instanceWrapper.getWrappedClass();
 		if (beanType != NullBean.class) {
 			mbd.resolvedTargetType = beanType;
@@ -566,6 +567,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Eagerly cache singletons to be able to resolve circular references
 		// even when triggered by lifecycle interfaces like BeanFactoryAware.
+		//提前暴露，避免循环依赖
 		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
 				isSingletonCurrentlyInCreation(beanName));
 		if (earlySingletonExposure) {
@@ -573,13 +575,19 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.debug("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
+			// addSingletonFactory 提前将创建的 bean 实例加入到 singletonFactories 中三级缓存
+			// 这里是为了后期避免循环依赖
+			//getEarlyBeanReference(String beanName, RootBeanDefinition mbd, Object bean) 方法也非常重要，
+			// 这里会创建早期初始化 Bean 可能存在的 AOP 代理等等
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
 		// Initialize the bean instance.
 		Object exposedObject = bean;
 		try {
+			//依赖注入
 			populateBean(beanName, mbd, instanceWrapper);
+			//初始化过程
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -593,6 +601,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		if (earlySingletonExposure) {
+			//这里allowEarlyReference为啥要传false？
+			// 是因为这里不涉及到循环依赖？还是说上面已经populateBean之后，循环依赖如果存在，已经被处理过，必定不会存在
 			Object earlySingletonReference = getSingleton(beanName, false);
 			if (earlySingletonReference != null) {
 				if (exposedObject == bean) {
@@ -1787,7 +1797,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * methods with arguments.
 	 * @see #invokeInitMethods
 	 */
-	protected void invokeCustomInitMethod(String beanName, final Object bean, RootBeanDefinition mbd)
+		protected void invokeCustomInitMethod(String beanName, final Object bean, RootBeanDefinition mbd)
 			throws Throwable {
 
 		String initMethodName = mbd.getInitMethodName();
